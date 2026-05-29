@@ -711,6 +711,21 @@ def _activity_counts(data):
     return counts
 
 
+# Per-type training weight: a full mock is heavier than a single essay/listening
+# set, which is heavier than a reading note. Used to shade the heatmap so color
+# reflects training load, not just item count.
+ACTIVITY_WEIGHTS = {"mock": 3, "writing": 2, "listening": 2, "reading": 1}
+
+
+def _activity_weight(data):
+    w = {}
+    for key, rec in _all_records(data):
+        d = _rec_date(rec)
+        if _is_date(d):
+            w[d] = w.get(d, 0) + ACTIVITY_WEIGHTS.get(key, 1)
+    return w
+
+
 def _latest_overall(mock):
     if not mock:
         return None
@@ -815,7 +830,8 @@ def build_goal_gap(mock):
 
 
 def build_heatmap(data, weeks=18):
-    counts = _activity_counts(data)
+    counts = _activity_counts(data)      # 件数（tooltip 用）
+    weights = _activity_weight(data)     # 加权训练量（着色用）
     today = date.today()
     start = today - timedelta(days=weeks * 7 - 1)
     start -= timedelta(days=start.weekday())  # align to Monday
@@ -823,14 +839,14 @@ def build_heatmap(data, weeks=18):
     cols = (today - start).days // 7 + 1
     w = 24 + cols * (cell + gap)
     h = 22 + 7 * (cell + gap)
-    maxc = max(counts.values()) if counts else 0
+    maxw = max(weights.values()) if weights else 0
 
-    def level(n):
-        if n <= 0:
+    def level(wv):
+        if wv <= 0:
             return 0
-        if maxc <= 1:
+        if maxw <= 1:
             return 4
-        q = n / maxc
+        q = wv / maxw
         return 1 if q <= 0.25 else 2 if q <= 0.5 else 3 if q <= 0.75 else 4
 
     parts = ['<svg viewBox="0 0 %d %d" class="heatmap" role="img">' % (w, h)]
@@ -846,11 +862,14 @@ def build_heatmap(data, weeks=18):
         ci = (d - start).days // 7
         x = 22 + ci * (cell + gap)
         y = 18 + d.weekday() * (cell + gap)
-        n = counts.get(d.isoformat(), 0)
+        key = d.isoformat()
+        n = counts.get(key, 0)
+        wv = weights.get(key, 0)
+        tip = "%s · %d 项 · 训练量 %d" % (key, n, wv) if n else "%s · 0 项" % key
         parts.append(
             '<rect class="hm-cell hm-l%d" x="%.1f" y="%.1f" width="%d" '
-            'height="%d" rx="3" data-tip="%s · %d 项"/>'
-            % (level(n), x, y, cell, cell, d.isoformat(), n)
+            'height="%d" rx="3" data-tip="%s"/>'
+            % (level(wv), x, y, cell, cell, _esc(tip))
         )
         if d.day <= 7 and d.month not in months:
             months.add(d.month)
@@ -1040,7 +1059,7 @@ def render_html(data, root, exam_date=None):
     panels = [
         ("目标达成度（最近模考 vs 目标）", build_goal_gap(data["mock"]), False),
         ("四科雷达", build_radar(data["mock"]), False),
-        ("学习热力图（近 18 周）", build_heatmap(data), True),
+        ("学习热力图（近 18 周 · 按训练量加权）", build_heatmap(data), True),
         ("写作分数趋势", build_writing_trend(data["writing"]), False),
         ("听力正确率趋势", build_listening_trend(data["listening"]), False),
         ("高频错误标签", build_error_bars(data["writing"], data["listening"]), False),

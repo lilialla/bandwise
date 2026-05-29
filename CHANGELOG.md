@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-05-29
+
+### Changed
+
+- Heatmap now shades by **weighted training load** instead of raw item count:
+  a full mock counts 3, an essay or full listening set 2, a reading note 1.
+  So a mock day reads heavier than a day with a single note. The tooltip shows
+  both the item count and the training-load value (`N 项 · 训练量 W`). The
+  "学习活跃天数" KPI still counts distinct active days.
+
 ## [1.1.2] - 2026-05-29
 
 ### Fixed
@@ -78,7 +88,8 @@ Initial public release.
   frontmatter contract (name matches directory, required `metadata` fields,
   PolyForm-Noncommercial-1.0.0 license), wired into CI.
 
-[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/lilialla/bandwise/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/lilialla/bandwise/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lilialla/bandwise/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lilialla/bandwise/compare/v1.0.0...v1.1.0
