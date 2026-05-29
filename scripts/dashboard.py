@@ -319,7 +319,7 @@ def _esc(value):
 # ---------------------------------------------------------------------------
 
 def _no_data():
-    return '<p class="nodata">no data yet</p>'
+    return '<p class="nodata">暂无数据</p>'
 
 
 def line_chart(series, width=520, height=240, ylabel="", y_min=None, y_max=None):
@@ -492,8 +492,8 @@ def radar_chart(scores, target, size=320):
 
     legend = (
         '<div class="legend">'
-        '<span class="lg"><i style="background:%s"></i>Most recent mock</span>'
-        '<span class="lg"><i style="background:%s"></i>Target</span></div>'
+        '<span class="lg"><i style="background:%s"></i>最近模考</span>'
+        '<span class="lg"><i style="background:%s"></i>目标</span></div>'
         % (COL_ACTUAL, COL_TARGET)
     )
     return "".join(parts) + legend
@@ -546,10 +546,10 @@ def build_writing_trend(writing):
     for date, opus, gpt5 in rows:
         opus_pts.append((date, opus))
         gpt5_pts.append((date, gpt5))
-    series = [{"label": "Opus overall", "color": COL_OPUS, "points": opus_pts}]
+    series = [{"label": "Opus 总分", "color": COL_OPUS, "points": opus_pts}]
     if any(g is not None for _, g in gpt5_pts):
-        series.append({"label": "GPT-5 overall", "color": COL_GPT5, "points": gpt5_pts})
-    return line_chart(series, ylabel="Band", y_min=4.0, y_max=9.0)
+        series.append({"label": "GPT-5 总分", "color": COL_GPT5, "points": gpt5_pts})
+    return line_chart(series, ylabel="分数", y_min=4.0, y_max=9.0)
 
 
 def build_radar(mock):
@@ -595,7 +595,7 @@ def build_listening_trend(listening):
             pct = round(100.0 * correct / total, 1)
         rows.append((date, pct))
     rows.sort(key=lambda r: r[0])
-    series = [{"label": "Accuracy %", "color": COL_LISTEN, "points": rows}]
+    series = [{"label": "正确率 %", "color": COL_LISTEN, "points": rows}]
     return line_chart(series, ylabel="%", y_min=0.0, y_max=100.0)
 
 
@@ -618,11 +618,11 @@ def build_summary(data):
             open_verif += len(ov)
 
     cards = [
-        ("Writing pieces", len(writing)),
-        ("Listening sets", len(listening)),
-        ("Mock exams", len(mock)),
-        ("Latest mock band", latest_band),
-        ("Open verifications", open_verif),
+        ("写作篇数", len(writing)),
+        ("听力套数", len(listening)),
+        ("模考次数", len(mock)),
+        ("最近模考总分", latest_band),
+        ("待核验项", open_verif),
     ]
     items = []
     for label, value in cards:
@@ -641,7 +641,7 @@ STYLE = """
 :root { --bg:#f1f5f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",Roboto,Helvetica,Arial,sans-serif;
   line-height:1.45; }
 .wrap { max-width:1100px; margin:0 auto; padding:28px 20px 60px; }
 header h1 { font-size:26px; margin:0 0 4px; letter-spacing:-0.01em; }
@@ -684,10 +684,10 @@ def render_html(data, root):
     listen_trend = build_listening_trend(data["listening"])
 
     panels = [
-        ("Writing score trend", writing_trend),
-        ("Four-skill radar (latest mock vs target)", radar),
-        ("Top error tags", error_bars),
-        ("Listening accuracy trend", listen_trend),
+        ("写作分数趋势", writing_trend),
+        ("四科雷达（最近模考 vs 目标）", radar),
+        ("高频错误标签", error_bars),
+        ("听力正确率趋势", listen_trend),
     ]
     panel_html = "".join(
         '<section class="panel"><h2>%s</h2>%s</section>' % (_esc(title), body)
@@ -695,22 +695,22 @@ def render_html(data, root):
     )
 
     return """<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bandwise · IELTS Progress Dashboard</title>
+<title>Bandwise · 雅思备考进度面板</title>
 <style>%s</style>
 </head>
 <body>
 <div class="wrap">
 <header>
-<h1>Bandwise · IELTS Progress Dashboard</h1>
-<p class="ts">Generated %s · data root: %s</p>
+<h1>Bandwise · 雅思备考进度面板</h1>
+<p class="ts">生成时间 %s · 数据目录：%s</p>
 </header>
 %s
 <div class="grid">%s</div>
-<footer>Built with the Bandwise dashboard generator — fully offline, no dependencies.</footer>
+<footer>由 Bandwise 面板生成器生成 · 完全离线 · 零依赖</footer>
 </div>
 </body>
 </html>
@@ -733,17 +733,17 @@ def resolve_root(cli_root):
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="dashboard.py",
-        description="Generate a self-contained Bandwise IELTS progress "
-        "dashboard (dashboard.html) with inline SVG charts.",
+        description="生成 Bandwise 雅思备考进度面板 "
+        "（dashboard.html，内嵌 SVG 图表）。",
     )
     parser.add_argument(
         "--root",
-        help="Data root directory. Falls back to $IELTS_COACH_HOME, "
-        "then ~/ielts-coach.",
+        help="数据根目录。未设置时回退到 $IELTS_COACH_HOME，"
+        "再回退到 ~/ielts-coach。",
     )
     parser.add_argument(
         "--out",
-        help="Output HTML path (default: <root>/dashboard.html).",
+        help="输出 HTML 路径（默认 <root>/dashboard.html）。",
     )
     args = parser.parse_args(argv)
 
@@ -763,12 +763,12 @@ def main(argv=None):
         with open(out, "w", encoding="utf-8") as fh:
             fh.write(page)
     except OSError as exc:
-        print("error: could not write %s: %s" % (out, exc), file=sys.stderr)
+        print("错误：无法写入 %s：%s" % (out, exc), file=sys.stderr)
         return 1
 
     total = sum(len(v) for v in data.values())
     print(
-        "Wrote %s (writing=%d, listening=%d, mock=%d; %d files total)"
+        "已生成 %s（写作=%d，听力=%d，模考=%d；共 %d 个文件）"
         % (out, len(data["writing"]), len(data["listening"]), len(data["mock"]), total)
     )
     return 0
