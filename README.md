@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f172a?style=flat-square" alt="License: MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-0f172a?style=flat-square" alt="License: PolyForm Noncommercial 1.0.0"></a>
   <img src="https://img.shields.io/badge/skills-10-9a7b4f?style=flat-square" alt="10 skills">
   <img src="https://img.shields.io/badge/Claude_Code-skills-0f172a?style=flat-square" alt="Claude Code skills">
   <img src="https://img.shields.io/badge/IELTS-Academic-9a7b4f?style=flat-square" alt="IELTS Academic">
@@ -242,6 +242,11 @@ A：换算表按 Academic 写的，写作/口语/听力通用；阅读 GT 换算
 
 ## License
 
-[MIT](LICENSE) — 随便用、随便改、随便商用。
+**源码可见（source-available），非 OSI 开源。** 采用 [PolyForm Noncommercial License 1.0.0](LICENSE)。
+
+- ✅ **个人 / 非商业免费**：个人备考、学习、研究、爱好用途，以及教育 / 非营利 / 公共机构使用，均可免费使用，并可为非商业目的修改、再分发。
+- 💼 **商业使用须授权**：任何商业用途（含以本项目提供付费服务 / 集成进商业产品 / 商业培训）必须先获得作者的**单独商业许可**。获取方式：[buyunfadian.com](https://buyunfadian.com) 或在本仓库 [开 issue](https://github.com/lilialla/bandwise/issues) 联系。
+
+完整条款见 [LICENSE](LICENSE)。
 
 <p align="center"><sub>Built for IELTS candidates who'd rather see the numbers than be told "good job".</sub></p>

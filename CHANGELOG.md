@@ -39,7 +39,7 @@ Initial public release.
   light/dark theme toggle. UI localized to Chinese.
 - **Validation gate** (`scripts/validate_skills.py`) enforcing the skill
   frontmatter contract (name matches directory, required `metadata` fields,
-  MIT license), wired into CI.
+  PolyForm-Noncommercial-1.0.0 license), wired into CI.
 
 [Unreleased]: https://github.com/lilialla/bandwise/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/lilialla/bandwise/releases/tag/v1.0.0

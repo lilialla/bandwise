@@ -247,8 +247,8 @@ def check_frontmatter(repo: str, p: Printer) -> tuple[int, int]:
             if not license_val:
                 p.failed(f"{rel}: 'metadata.license' missing")
                 ok = False
-            elif license_val != "MIT":
-                p.failed(f"{rel}: 'metadata.license' is '{license_val}', expected 'MIT'")
+            elif license_val != "PolyForm-Noncommercial-1.0.0":
+                p.failed(f"{rel}: 'metadata.license' is '{license_val}', expected 'PolyForm-Noncommercial-1.0.0'")
                 ok = False
 
         if ok:

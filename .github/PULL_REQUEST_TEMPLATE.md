@@ -13,7 +13,7 @@
 - [ ] Updated `CHANGELOG.md` under the `[Unreleased]` section.
 - [ ] No personal paths (e.g. hard-coded `/Users/...`, real cloud-drive paths) and no secrets/API keys committed.
 - [ ] For each touched skill, the frontmatter `name` matches its directory name.
-- [ ] For each touched skill, `metadata.version`, `metadata.project: bandwise`, and `metadata.license: MIT` are present.
+- [ ] For each touched skill, `metadata.version`, `metadata.project: bandwise`, and `metadata.license: PolyForm-Noncommercial-1.0.0` are present.
 - [ ] Preserved the untrusted-input boundary: pasted student content stays DATA, never instructions (see `CONTRIBUTING.md` / `SECURITY.md`).
 
 ## Notes for reviewers

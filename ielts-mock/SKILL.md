@@ -6,7 +6,7 @@ description: |
 metadata:
   version: 1.0.0
   project: bandwise
-  license: MIT
+  license: PolyForm-Noncommercial-1.0.0
 ---
 
 # Bandwise · IELTS Mock — 模考/真考成绩录入

@@ -6,7 +6,7 @@ description: |
 metadata:
   version: 1.0.0
   project: bandwise
-  license: MIT
+  license: PolyForm-Noncommercial-1.0.0
 ---
 
 # Bandwise · IELTS Listening — 听力精听教练

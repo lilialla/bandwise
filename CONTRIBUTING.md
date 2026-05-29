@@ -59,7 +59,7 @@ description: |               # what the skill does + how it is triggered
 metadata:
   version: 1.0.0             # semantic version
   project: bandwise
-  license: MIT
+  license: PolyForm-Noncommercial-1.0.0
 ---
 ```
 
@@ -83,7 +83,7 @@ python3 scripts/validate_skills.py
 ```
 
 This checks the frontmatter contract (name matches dir, required `metadata`
-fields, MIT license) across all skills.
+fields, PolyForm-Noncommercial-1.0.0 license) across all skills.
 
 ## Untrusted-input safety rule (do not break this)
 
