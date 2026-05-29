@@ -1,6 +1,9 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Bandwise — IELTS Coach for Claude Code" width="100%">
+  <img src="assets/logo.svg" alt="Bandwise" width="116">
 </p>
+
+<h1 align="center">Bandwise</h1>
+<p align="center"><em>IELTS Coach for Claude Code · 雅思备考教练</em></p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-0f172a?style=flat-square" alt="License: PolyForm Noncommercial 1.0.0"></a>
@@ -10,7 +13,7 @@
   <img src="https://img.shields.io/badge/runtime-zero_dependencies-5f7a5b?style=flat-square" alt="Zero dependencies">
   <img src="https://img.shields.io/badge/data-local_first-5f7a5b?style=flat-square" alt="Local first">
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-9a7b4f?style=flat-square" alt="PRs welcome"></a>
-  <img src="https://img.shields.io/badge/version-1.0.0-0f172a?style=flat-square" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/version-1.1.4-0f172a?style=flat-square" alt="Version 1.1.4">
 </p>
 
 <p align="center">

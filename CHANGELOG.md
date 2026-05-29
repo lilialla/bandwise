@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-05-29
+
+### Changed
+
+- Redesigned the brand mark: replaced the wide README banner with a compact,
+  editorial **square monogram logo** — warm-paper tile, ink hairline colophon
+  frame, a thin ink ring echoing the buyunfadian.com favicon, a serif "B", and
+  a bronze colophon dot. Magazine-minimal, same visual family as the brand
+  site. README header is now a centered logo + title + tagline. Removed
+  `assets/banner.svg`.
+- Enabled GitHub Actions CI (`.github/workflows/ci.yml`): runs the validation
+  gate and byte-compiles scripts on every push/PR.
+
 ## [1.1.3] - 2026-05-29
 
 ### Changed
@@ -88,7 +101,8 @@ Initial public release.
   frontmatter contract (name matches directory, required `metadata` fields,
   PolyForm-Noncommercial-1.0.0 license), wired into CI.
 
-[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.3...HEAD
+[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.4...HEAD
+[1.1.4]: https://github.com/lilialla/bandwise/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/lilialla/bandwise/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/lilialla/bandwise/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lilialla/bandwise/compare/v1.1.0...v1.1.1
