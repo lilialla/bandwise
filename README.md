@@ -172,7 +172,9 @@ python3 scripts/dashboard.py                 # 默认读 ~/ielts-coach，输出�
 python3 scripts/dashboard.py --root /path --out ~/Desktop/ielts.html
 ```
 
-包含：写作分数趋势线 · 四科雷达图（对比目标）· 错误 tag Top 10 柱状图 · 听力正确率趋势 · 汇总卡片。双击 HTML 即可看，不联网。
+包含：考试倒计时 + 目标进度环 · 汇总卡片 · 目标达成度 · 学习热力图 · 写作/听力趋势线 · 四科雷达 · 高频错误标签 · 最近动态。支持深色模式与悬停提示。双击 HTML 即可看，不联网。
+
+> 数据目录用英文子目录（`writing/` 等）或常见中文目录（`03_写作批改/`、`04_听力精听/`、`02_模考记录/`）都能读，无需迁移。考试倒计时可用 `--exam-date YYYY-MM-DD` 指定，或在 `study-plan.md` 写 `exam_date`。
 
 ## 设计内核：证据级 + 7 级来源分级
 

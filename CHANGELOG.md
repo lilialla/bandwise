@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-05-29
+
+### Added
+
+- Dashboard now reads **Chinese folder names** in addition to the English ones
+  (`writing` ↔ `03_写作批改`, `listening` ↔ `04_听力精听`, `mock` ↔
+  `02_模考记录`, `reading` ↔ `03_阅读精读`), so a Chinese-organized data root
+  renders without migration. Records are de-duplicated by file path.
+
 ## [1.1.0] - 2026-05-29
 
 ### Added
@@ -59,6 +68,7 @@ Initial public release.
   frontmatter contract (name matches directory, required `metadata` fields,
   PolyForm-Noncommercial-1.0.0 license), wired into CI.
 
-[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/lilialla/bandwise/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lilialla/bandwise/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lilialla/bandwise/releases/tag/v1.0.0

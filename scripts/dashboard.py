@@ -306,13 +306,29 @@ def _read_md_dir(path):
     return records
 
 
+# Each category reads its English dir plus common Chinese folder names, so the
+# dashboard works on a Chinese-organized data root without migration.
+DIR_ALIASES = {
+    "writing": ["writing", "03_写作批改"],
+    "listening": ["listening", "04_听力精听"],
+    "reading": ["reading", "03_阅读精读"],
+    "mock": ["mock", "02_模考记录"],
+}
+
+
 def load_data(root):
-    return {
-        "writing": _read_md_dir(os.path.join(root, "writing")),
-        "listening": _read_md_dir(os.path.join(root, "listening")),
-        "reading": _read_md_dir(os.path.join(root, "reading")),
-        "mock": _read_md_dir(os.path.join(root, "mock")),
-    }
+    data = {}
+    for cat, names in DIR_ALIASES.items():
+        seen, rows = set(), []
+        for name in names:
+            for rec in _read_md_dir(os.path.join(root, name)):
+                key = rec.get("_file") or id(rec)
+                if key in seen:
+                    continue
+                seen.add(key)
+                rows.append(rec)
+        data[cat] = rows
+    return data
 
 
 def read_exam_date(root, cli_exam_date):
