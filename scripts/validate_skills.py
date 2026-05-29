@@ -61,8 +61,12 @@ GOOGLE_DRIVE_RE = re.compile(r"GoogleDrive")
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 CN_DIR_RE = re.compile(r"0\d_[一-鿿]")
 
-# Email allow-list: substrings that make a matched email a benign placeholder.
-EMAIL_ALLOW_SUBSTRINGS = ("noreply@", "me@example", "example.com", "example.org")
+# Email allow-list: substrings that make a matched email a benign placeholder,
+# plus the maintainer's intentional public contact address.
+EMAIL_ALLOW_SUBSTRINGS = (
+    "noreply@", "me@example", "example.com", "example.org",
+    "1733970552@qq.com",  # maintainer's public commercial-licensing contact
+)
 
 # Path-convention markers a writing SKILL.md should reference.
 PATH_CONVENTION_RE = re.compile(r"IELTS_COACH_HOME|~/ielts-coach|\$HOME/ielts-coach")

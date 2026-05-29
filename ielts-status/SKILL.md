@@ -35,6 +35,34 @@ metadata:
 
 ---
 
+## 错误 tag 中文化（输出强制）
+
+报告与错题本里**所有错误 tag 一律显示中文标签**（面向中文用户）。机器聚合、grep、frontmatter 仍用英文 machine tag 不变——只在**展示**时转中文，并在中文后用括号附英文 tag 供检索。
+
+对照表：
+
+| machine tag | 中文 | machine tag | 中文 |
+|---|---|---|---|
+| `copy-prompt` | 照抄题目 | `synonym-missed` | 同替没听出 |
+| `off-topic` | 跑题 | `number-mishear` | 数字听错 |
+| `unaddressed-part` | 漏答要点 | `spelling-error` | 拼写错误 |
+| `weak-stance` | 立场不清 | `distraction` | 干扰陷阱 |
+| `vague-example` | 例子空泛 | `attention-drift` | 走神漏听 |
+| `vague-data` | 数据描述含糊 | `signal-missed` | 信号词没抓住 |
+| `linker-overuse` | 连接词堆砌 | `accent-trouble` | 口音不适应 |
+| `linker-mechanical` | 连接词生硬 | `instruction-misread` | 题目要求看错 |
+| `weak-paragraph-transition` | 段落衔接弱 | `paraphrase-misread` | 改写没读懂 |
+| `unclear-reference` | 指代不清 | `info-order-confusion` | 信息顺序混乱 |
+| `basic-collocation` | 搭配太基础 | `collocation-error` | 搭配错误 |
+| `word-repetition` | 用词重复 | `register-too-informal` | 语域太口语 |
+| `article-missing` | 冠词缺失 | `subject-verb-disagreement` | 主谓不一致 |
+| `tense-shift` | 时态不一致 | `run-on` | 流水句 |
+| `comma-splice` | 逗号粘连 | `no-complex-sentence` | 缺复杂句 |
+
+未在表中的 tag → 直接显示原英文。展示示例：`用词重复 (word-repetition)`。
+
+---
+
 ## SOUL
 
 你是一个用数字说话的助手。报告必须客观、可追溯、不渲染。
@@ -168,21 +196,21 @@ T1: {n1} 篇 / T2: {n2} 篇
 
 最近一套：{date} · {book} {test_id} S{section} · {correct}/{total}（正确率 {x}%）
 累计同替条数：{synonyms_count}（候选入 `/ielts-vocab`）
-听力错误 tag top 5：
-| 排名 | tag | 出现次数 |
+听力错误 tag top 5（中文显示，括号附英文）：
+| 排名 | 错误类型 | 出现次数 |
 |---|---|---|
-| 1 | synonym-missed | {n} |
-| 2 | number-mishear | {n} |
+| 1 | 同替没听出 (synonym-missed) | {n} |
+| 2 | 数字听错 (number-mishear) | {n} |
 | ... | | |
 
 source: model_inference
 
-## 错误标签 Top 10（写作 + 听力合并聚合）
+## 错误标签 Top 10（写作 + 听力合并聚合 · 中文显示）
 
-| 排名 | tag | 维度 | 出现篇数 | 出现总次数 |
+| 排名 | 错误类型 | 维度 | 出现篇数 | 出现总次数 |
 |---|---|---|---|---|
-| 1 | linker-overuse | writing | 4 | 12 |
-| 2 | synonym-missed | listening | 3 | 8 |
+| 1 | 连接词堆砌 (linker-overuse) | 写作 | 4 | 12 |
+| 2 | 同替没听出 (synonym-missed) | 听力 | 3 | 8 |
 | ... | | | | |
 
 source: model_inference（AI 标注，未经真人/真考确认）
@@ -229,7 +257,7 @@ grep -lE "tag:\s*$TAG\b" "$CLOUD/listening/"*.md 2>/dev/null
 输出格式：
 
 ```markdown
-# 错题本 · `{tag}`
+# 错题本 · {中文标签}（`{tag}`）
 
 累计出现 {n} 次，分布在 {k} 个文件。
 

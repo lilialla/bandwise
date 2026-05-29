@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-29
+
+### Added
+
+- Maintainer email (`1733970552@qq.com`) as a commercial-licensing contact in
+  `LICENSE` and the README, alongside the website and GitHub issues.
+
+### Changed
+
+- `/ielts-status` now renders all error tags with **Chinese labels** (English
+  machine tag kept in parentheses for search); stored tags are unchanged so
+  aggregation still works. This matches the dashboard's localized labels.
+
+### Note
+
+- `v1.0.0` is now frozen at its released commit. Subsequent changes ship as
+  new versions rather than moving the `1.0.0` tag.
+
 ## [1.0.0] - 2026-05-29
 
 Initial public release.
@@ -41,5 +59,6 @@ Initial public release.
   frontmatter contract (name matches directory, required `metadata` fields,
   PolyForm-Noncommercial-1.0.0 license), wired into CI.
 
-[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/lilialla/bandwise/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lilialla/bandwise/releases/tag/v1.0.0
