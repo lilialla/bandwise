@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-05-29
+
+### Fixed
+
+- Validator no longer false-flags the **documented** Chinese data-folder names
+  (`03_写作批改`, `04_听力精听`, `02_模考记录`, `03_阅读精读`) as personal-path
+  leaks when they appear in docs/code. The leak rule now matches the full
+  folder token and allowlists these four; any other `0N_中文` token is still
+  caught. (Regression from v1.1.1, which shipped with a red validator gate.)
+
 ## [1.1.1] - 2026-05-29
 
 ### Added
@@ -68,7 +78,8 @@ Initial public release.
   frontmatter contract (name matches directory, required `metadata` fields,
   PolyForm-Noncommercial-1.0.0 license), wired into CI.
 
-[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/lilialla/bandwise/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/lilialla/bandwise/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lilialla/bandwise/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lilialla/bandwise/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lilialla/bandwise/releases/tag/v1.0.0

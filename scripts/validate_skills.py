@@ -59,7 +59,11 @@ FORBIDDEN_LITERALS = [
 MAC_HOME_RE = re.compile(r"/Users/[A-Za-z0-9_.-]+/")
 GOOGLE_DRIVE_RE = re.compile(r"GoogleDrive")
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
-CN_DIR_RE = re.compile(r"0\d_[一-鿿]")
+CN_DIR_RE = re.compile(r"0\d_[一-鿿]+")
+# Documented Chinese data-folder names the dashboard intentionally supports.
+# These are a public feature, not leaked private paths, so they are allowed to
+# appear in docs/code. Any OTHER 0N_中文 token is still flagged as a leak.
+CN_DIR_ALLOW = {"03_写作批改", "04_听力精听", "02_模考记录", "03_阅读精读"}
 
 # Email allow-list: substrings that make a matched email a benign placeholder,
 # plus the maintainer's intentional public contact address.
@@ -275,8 +279,10 @@ def scan_line_for_leaks(line: str) -> list[str]:
         hits.append("mac home path (/Users/.../)")
     if GOOGLE_DRIVE_RE.search(line):
         hits.append("GoogleDrive reference")
-    if CN_DIR_RE.search(line):
-        hits.append("Chinese numbered dir (0N_xxx)")
+    for cn_dir in CN_DIR_RE.findall(line):
+        if cn_dir in CN_DIR_ALLOW:
+            continue
+        hits.append(f"Chinese numbered dir '{cn_dir}'")
 
     for email in EMAIL_RE.findall(line):
         if any(allowed in email for allowed in EMAIL_ALLOW_SUBSTRINGS):
