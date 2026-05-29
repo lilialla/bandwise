@@ -1,0 +1,25 @@
+# Bandwise — nothing personal should ever be committed.
+
+# The data root holds your essays, scores, and personal study records.
+# It lives OUTSIDE the repo by default (~/ielts-coach), but ignore any
+# accidental in-repo copy.
+ielts-coach/
+*/ielts-coach/
+dashboard.html
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local-only notes
+SCRATCH.md
+*.local.md

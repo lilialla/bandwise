@@ -1,0 +1,33 @@
+<svg width="900" height="240" viewBox="0 0 900 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bandwise — IELTS Coach for Claude Code">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="900" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="0.55" stop-color="#0F2A4A"/>
+      <stop offset="1" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="240" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FACC15"/>
+      <stop offset="1" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="word" x1="250" y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#BAE6FD"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="240" rx="24" fill="url(#bg)"/>
+
+  <!-- icon: ascending bars + trend -->
+  <g transform="translate(56,58)">
+    <rect x="0"  y="78" width="20" height="44" rx="4" fill="url(#bar)"/>
+    <rect x="30" y="56" width="20" height="66" rx="4" fill="url(#bar)"/>
+    <rect x="60" y="32" width="20" height="90" rx="4" fill="url(#bar)"/>
+    <rect x="90" y="8"  width="20" height="114" rx="4" fill="url(#bar)"/>
+    <path d="M8 76 L40 54 L70 30 L100 7" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92"/>
+    <circle cx="100" cy="7" r="6" fill="#FFFFFF"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="250" y="118" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="76" font-weight="800" fill="url(#word)" letter-spacing="-1">Bandwise</text>
+  <text x="252" y="158" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="26" font-weight="500" fill="#93C5FD">IELTS Coach for Claude Code</text>
+  <text x="252" y="192" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="400" fill="#64748B">10 skills · evidence-graded · local-first · zero data leaves your machine without you</text>
+</svg>
