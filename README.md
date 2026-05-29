@@ -3,14 +3,14 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/skills-10-0EA5E9.svg" alt="10 skills">
-  <img src="https://img.shields.io/badge/Claude%20Code-skills-8A63D2.svg" alt="Claude Code skills">
-  <img src="https://img.shields.io/badge/IELTS-Academic-FACC15.svg" alt="IELTS Academic">
-  <img src="https://img.shields.io/badge/runtime-zero%20dependencies-success.svg" alt="Zero dependencies">
-  <img src="https://img.shields.io/badge/data-local--first-10B981.svg" alt="Local first">
-  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome"></a>
-  <img src="https://img.shields.io/badge/version-1.0.0-informational.svg" alt="Version 1.0.0">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f172a?style=flat-square" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/skills-10-9a7b4f?style=flat-square" alt="10 skills">
+  <img src="https://img.shields.io/badge/Claude_Code-skills-0f172a?style=flat-square" alt="Claude Code skills">
+  <img src="https://img.shields.io/badge/IELTS-Academic-9a7b4f?style=flat-square" alt="IELTS Academic">
+  <img src="https://img.shields.io/badge/runtime-zero_dependencies-5f7a5b?style=flat-square" alt="Zero dependencies">
+  <img src="https://img.shields.io/badge/data-local_first-5f7a5b?style=flat-square" alt="Local first">
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-9a7b4f?style=flat-square" alt="PRs welcome"></a>
+  <img src="https://img.shields.io/badge/version-1.0.0-0f172a?style=flat-square" alt="Version 1.0.0">
 </p>
 
 <p align="center">

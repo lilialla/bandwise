@@ -29,15 +29,41 @@ from datetime import datetime, timedelta, date
 # Target band per skill used to draw the reference line on the radar chart.
 TARGET_SCORES = {"L": 8.0, "R": 8.0, "W": 7.0, "S": 7.0}
 
-# Color palette.
-COL_OPUS = "#2563eb"
-COL_GPT5 = "#db2777"
-COL_TARGET = "#94a3b8"
-COL_ACTUAL = "#16a34a"
-COL_BAR = "#7c3aed"
-COL_GRID = "#e2e8f0"
+# Color palette — editorial "ink + parchment + bronze" system, drawn from the
+# buyunfadian.com brand (deep slate ink, warm cream, slate grays) extended with
+# a muted bronze accent. Mid-tones chosen so series read on both light & dark.
+COL_OPUS = "#9a7b4f"     # bronze — primary series
+COL_GPT5 = "#5b6b7a"     # slate-blue — secondary series
+COL_TARGET = "#b9a888"   # taupe — radar target (dashed)
+COL_ACTUAL = "#5b6b7a"   # slate-blue — radar actual
+COL_BAR = "#9a7b4f"      # bronze — error bars
+COL_GRID = "#ded7c8"     # warm grid lines
 COL_AXIS = "#64748b"
-COL_LISTEN = "#0891b2"
+COL_LISTEN = "#7d8471"   # sage — listening trend
+
+# Error-tag display labels (Chinese). The stored machine tag stays English for
+# cross-skill aggregation; only the dashboard label is localized.
+CHINESE_TAGS = {
+    "copy-prompt": "照抄题目", "off-topic": "跑题",
+    "unaddressed-part": "漏答要点", "weak-stance": "立场不清",
+    "vague-example": "例子空泛", "vague-data": "数据描述含糊",
+    "linker-overuse": "连接词堆砌", "linker-mechanical": "连接词生硬",
+    "weak-paragraph-transition": "段落衔接弱", "unclear-reference": "指代不清",
+    "basic-collocation": "搭配太基础", "word-repetition": "用词重复",
+    "collocation-error": "搭配错误", "spelling": "拼写", "spelling-error": "拼写错误",
+    "register-too-informal": "语域太口语", "article-missing": "冠词缺失",
+    "subject-verb-disagreement": "主谓不一致", "tense-shift": "时态不一致",
+    "run-on": "流水句", "comma-splice": "逗号粘连",
+    "no-complex-sentence": "缺复杂句", "synonym-missed": "同替没听出",
+    "number-mishear": "数字听错", "distraction": "干扰陷阱",
+    "attention-drift": "走神漏听", "signal-missed": "信号词没抓住",
+    "accent-trouble": "口音不适应", "instruction-misread": "题目要求看错",
+    "paraphrase-misread": "改写没读懂", "info-order-confusion": "信息顺序混乱",
+}
+
+
+def _tag_label(tag):
+    return CHINESE_TAGS.get(tag, tag)
 
 
 # ---------------------------------------------------------------------------
@@ -624,6 +650,8 @@ def build_error_bars(writing, listening):
     if not counts:
         return _no_data()
     top = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:10]
+    # localize labels for display; keep nothing English on the panel
+    top = [(_tag_label(tag), n) for tag, n in top]
     return hbar_chart(top)
 
 
@@ -856,26 +884,29 @@ def build_activity_feed(data, limit=8):
 
 STYLE = """
 :root {
-  --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#64748b;
-  --border:#e6ebf2; --track:#eef2f7; --shadow:0 1px 3px rgba(15,23,42,.06);
-  --accent:#0ea5e9; --accent2:#1e3a8a;
-  --c-writing:#2563eb; --c-listen:#0891b2; --c-mock:#7c3aed;
-  --c-streak:#f59e0b; --c-target:#16a34a; --c-warn:#e11d48;
-  --good:#16a34a; --bad:#e11d48;
-  --hm0:#eaeef4; --hm1:#cfe8fb; --hm2:#88c9f2; --hm3:#33a1e0; --hm4:#0b6cb0;
+  --bg:#f4f3ef; --panel:#ffffff; --ink:#0f172a; --muted:#6b7280;
+  --border:#e7e2d6; --track:#f0ece2; --shadow:0 1px 3px rgba(15,23,42,.06);
+  --cream:#ece7dc; --accent:#9a7b4f; --accent2:#0f172a;
+  --c-writing:#9a7b4f; --c-listen:#5b6b7a; --c-mock:#6b5b73;
+  --c-streak:#a8794f; --c-target:#5f7a5b; --c-warn:#a65046;
+  --good:#5f7a5b; --bad:#a65046;
+  --hm0:#efebe1; --hm1:#ddd1ba; --hm2:#c0a87f; --hm3:#7c6f57; --hm4:#0f172a;
+  --font-ui:Inter,"Noto Sans SC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --font-serif:"Noto Serif SC","Songti SC",STSong,Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 [data-theme="dark"] {
-  --bg:#0b1220; --panel:#141d30; --ink:#e7eef9; --muted:#93a4c0;
-  --border:#243149; --track:#1b2740; --shadow:0 1px 3px rgba(0,0,0,.4);
-  --hm0:#1b2740; --hm1:#163a5a; --hm2:#1f6fa6; --hm3:#37a0dd; --hm4:#7fd0ff;
+  --bg:#0a0c10; --panel:#14171f; --ink:#ece7dc; --muted:#8b8a82;
+  --border:#262a31; --track:#1b1f27; --shadow:0 1px 3px rgba(0,0,0,.5);
+  --hm0:#1b1f27; --hm1:#3a3526; --hm2:#6e6044; --hm3:#a98f63; --hm4:#ece7dc;
 }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",Roboto,Helvetica,Arial,sans-serif;
-  line-height:1.45; transition:background .25s,color .25s; }
+  font-family:var(--font-ui); line-height:1.5; transition:background .25s,color .25s;
+  -webkit-font-smoothing:antialiased; }
 .wrap { max-width:1160px; margin:0 auto; padding:26px 20px 60px; }
 .topbar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; }
-.topbar h1 { font-size:24px; margin:0 0 4px; letter-spacing:-0.01em; }
+.topbar h1 { font-size:25px; margin:0 0 4px; letter-spacing:-0.01em; font-family:var(--font-serif); font-weight:700; }
 .topbar .ts { color:var(--muted); font-size:12.5px; margin:0; }
 .ttoggle { border:1px solid var(--border); background:var(--panel); color:var(--ink);
   border-radius:999px; padding:7px 14px; font-size:13px; cursor:pointer;
@@ -883,31 +914,31 @@ body { margin:0; background:var(--bg); color:var(--ink);
 .ttoggle:hover { transform:translateY(-1px); }
 /* hero */
 .hero { display:flex; align-items:center; justify-content:space-between; gap:24px;
-  background:linear-gradient(120deg,var(--accent2),var(--accent));
-  color:#fff; border-radius:18px; padding:26px 30px; margin-bottom:22px;
-  box-shadow:0 10px 30px rgba(14,165,233,.22); flex-wrap:wrap; }
-.hero-cd .cd-num { font-size:58px; font-weight:800; line-height:1; letter-spacing:-1px; }
-.hero-cd .cd-unit { font-size:17px; font-weight:600; margin-top:6px; opacity:.95; }
-.hero-cd .cd-sub { font-size:12.5px; margin-top:6px; opacity:.8; }
+  background:linear-gradient(135deg,#1e293b 0%,#0f172a 55%,#020617 100%);
+  color:var(--cream); border-radius:18px; padding:28px 32px; margin-bottom:22px;
+  box-shadow:0 12px 34px rgba(15,23,42,.28); border:1px solid #1f2937; flex-wrap:wrap; }
+.hero-cd .cd-num { font-family:var(--font-mono); font-size:60px; font-weight:700; line-height:1; letter-spacing:-2px; color:#fff; }
+.hero-cd .cd-unit { font-family:var(--font-serif); font-size:18px; font-weight:600; margin-top:8px; opacity:.96; }
+.hero-cd .cd-sub { font-size:12.5px; margin-top:6px; opacity:.7; }
 .hero-ring { position:relative; width:148px; height:148px; flex:0 0 auto; }
 .ring { width:148px; height:148px; display:block; }
-.ring-bg { fill:none; stroke:rgba(255,255,255,.25); stroke-width:11; }
-.ring-fg { fill:none; stroke:#fff; stroke-width:11; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
+.ring-bg { fill:none; stroke:rgba(236,231,220,.18); stroke-width:11; }
+.ring-fg { fill:none; stroke:var(--accent); stroke-width:11; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
 .ring-cap { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.ring-cur { font-size:30px; font-weight:800; }
-.ring-tgt { font-size:12px; opacity:.85; margin-top:2px; }
+.ring-cur { font-family:var(--font-mono); font-size:31px; font-weight:700; color:#fff; }
+.ring-tgt { font-size:12px; opacity:.8; margin-top:2px; }
 /* kpi cards */
 .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:22px; }
 .card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--accent);
   border-radius:13px; padding:15px 17px; box-shadow:var(--shadow); }
-.card .cval { font-size:29px; font-weight:750; }
-.card .clabel { color:var(--muted); font-size:12.5px; margin-top:2px; }
+.card .cval { font-family:var(--font-mono); font-size:28px; font-weight:700; letter-spacing:-0.5px; }
+.card .clabel { color:var(--muted); font-size:12.5px; margin-top:3px; }
 /* grid + panels */
 .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
 .panel { background:var(--panel); border:1px solid var(--border); border-radius:16px;
   padding:18px 20px; box-shadow:var(--shadow); min-width:0; }
 .panel.wide { grid-column:1 / -1; }
-.panel h2 { font-size:15px; margin:0 0 14px; }
+.panel h2 { font-size:15.5px; margin:0 0 14px; font-family:var(--font-serif); font-weight:700; }
 .chart { width:100%; height:auto; display:block; overflow:visible; }
 .radar { max-width:330px; margin:0 auto; }
 .ytick,.xtick,.bval { fill:var(--muted); font-size:11px; }
@@ -943,7 +974,7 @@ body { margin:0; background:var(--bg); color:var(--ink);
 .feed-dot { width:9px; height:9px; border-radius:99px; flex:0 0 auto; }
 .feed-writing{background:var(--c-writing);} .feed-listening{background:var(--c-listen);}
 .feed-reading{background:var(--c-target);} .feed-mock{background:var(--c-mock);}
-.feed-date { color:var(--muted); font-variant-numeric:tabular-nums; flex:0 0 auto; }
+.feed-date { color:var(--muted); font-family:var(--font-mono); font-size:12.5px; flex:0 0 auto; }
 .feed-desc { color:var(--ink); }
 /* tooltip */
 #tip { position:fixed; z-index:50; background:var(--ink); color:var(--bg);
