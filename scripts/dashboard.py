@@ -22,7 +22,7 @@ import argparse
 import html
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, date
 
 # --- Tunable constants -----------------------------------------------------
 
@@ -284,8 +284,33 @@ def load_data(root):
     return {
         "writing": _read_md_dir(os.path.join(root, "writing")),
         "listening": _read_md_dir(os.path.join(root, "listening")),
+        "reading": _read_md_dir(os.path.join(root, "reading")),
         "mock": _read_md_dir(os.path.join(root, "mock")),
     }
+
+
+def read_exam_date(root, cli_exam_date):
+    """Resolve exam date: CLI arg > study-plan.md frontmatter `exam_date` > None."""
+    if cli_exam_date:
+        return _parse_date(cli_exam_date)
+    plan = os.path.join(root, "study-plan.md")
+    if os.path.isfile(plan):
+        try:
+            with open(plan, encoding="utf-8") as fh:
+                fm = parse_frontmatter(fh.read())
+            return _parse_date(fm.get("exam_date"))
+        except OSError:
+            return None
+    return None
+
+
+def _parse_date(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(str(value)[:10], "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -312,6 +337,13 @@ def _get(d, *keys):
 
 def _esc(value):
     return html.escape(str(value))
+
+
+def _fmt(value):
+    """Format a number without a trailing .0; pass through non-numbers."""
+    if isinstance(value, float):
+        return ("%.1f" % value).rstrip("0").rstrip(".")
+    return str(value)
 
 
 # ---------------------------------------------------------------------------
@@ -394,19 +426,24 @@ def line_chart(series, width=520, height=240, ylabel="", y_min=None, y_max=None)
 
     # Plot each series.
     for s in series:
-        pts = [(x_at[xl], y_at(yv)) for xl, yv in s["points"] if yv is not None and xl in x_at]
+        pts = [
+            (x_at[xl], y_at(yv), xl, yv)
+            for xl, yv in s["points"]
+            if yv is not None and xl in x_at
+        ]
         if not pts:
             continue
         if len(pts) >= 2:
-            d = "M " + " L ".join("%.1f %.1f" % p for p in pts)
+            d = "M " + " L ".join("%.1f %.1f" % (p[0], p[1]) for p in pts)
             parts.append(
                 '<path d="%s" fill="none" stroke="%s" stroke-width="2.5"/>'
                 % (d, s["color"])
             )
-        for px, py in pts:
+        for px, py, xl, yv in pts:
+            tip = "%s · %s %s" % (_esc(xl), _esc(s["label"]), _fmt(yv))
             parts.append(
-                '<circle cx="%.1f" cy="%.1f" r="3" fill="%s"/>'
-                % (px, py, s["color"])
+                '<circle class="pt" cx="%.1f" cy="%.1f" r="4.5" fill="%s" '
+                'data-tip="%s"/>' % (px, py, s["color"], tip)
             )
 
     parts.append("</svg>")
@@ -517,13 +554,19 @@ def hbar_chart(pairs, width=520, bar_h=24, gap=10):
             '<text x="%d" y="%.1f" class="blabel">%s</text>'
             % (pad_l - 8, y + bar_h * 0.7, _esc(label))
         )
+        # track behind the bar for a cleaner look
         parts.append(
-            '<rect x="%d" y="%.1f" width="%.1f" height="%d" rx="3" fill="%s"/>'
-            % (pad_l, y, bw, bar_h, COL_BAR)
+            '<rect x="%d" y="%.1f" width="%.1f" height="%d" rx="5" class="bartrack"/>'
+            % (pad_l, y, plot_w, bar_h)
+        )
+        parts.append(
+            '<rect class="bar" x="%d" y="%.1f" width="%.1f" height="%d" rx="5" '
+            'fill="%s" data-tip="%s · %d 次"/>'
+            % (pad_l, y, bw, bar_h, COL_BAR, _esc(label), count)
         )
         parts.append(
             '<text x="%.1f" y="%.1f" class="bval">%d</text>'
-            % (pad_l + bw + 6, y + bar_h * 0.7, count)
+            % (pad_l + bw + 8, y + bar_h * 0.7, count)
         )
     parts.append("</svg>")
     return "".join(parts)
@@ -599,38 +642,212 @@ def build_listening_trend(listening):
     return line_chart(series, ylabel="%", y_min=0.0, y_max=100.0)
 
 
-def build_summary(data):
-    writing = data["writing"]
-    listening = data["listening"]
-    mock = data["mock"]
+def _all_records(data):
+    out = []
+    for key in ("writing", "listening", "reading", "mock"):
+        for rec in data.get(key, []):
+            out.append((key, rec))
+    return out
 
-    latest_band = "—"
-    if mock:
-        rows = sorted(mock, key=lambda r: str(r.get("date") or r.get("_file", "")))
-        band = _as_float(_get(rows[-1], "scores", "overall"))
-        if band is not None:
-            latest_band = "%.1f" % band
 
+def _rec_date(rec):
+    return str(rec.get("date") or rec.get("_file", ""))[:10]
+
+
+def _is_date(s):
+    return len(s) == 10 and s[4] == "-" and s[7] == "-"
+
+
+def _activity_counts(data):
+    counts = {}
+    for _key, rec in _all_records(data):
+        d = _rec_date(rec)
+        if _is_date(d):
+            counts[d] = counts.get(d, 0) + 1
+    return counts
+
+
+def _latest_overall(mock):
+    if not mock:
+        return None
+    rows = sorted(mock, key=_rec_date)
+    return _as_float(_get(rows[-1], "scores", "overall"))
+
+
+def build_kpis(data):
     open_verif = 0
-    for rec in list(writing) + list(listening):
+    for _k, rec in _all_records(data):
         ov = rec.get("open_verifications")
         if isinstance(ov, list):
             open_verif += len(ov)
-
+    latest = _latest_overall(data["mock"])
     cards = [
-        ("写作篇数", len(writing)),
-        ("听力套数", len(listening)),
-        ("模考次数", len(mock)),
-        ("最近模考总分", latest_band),
-        ("待核验项", open_verif),
+        ("写作篇数", len(data["writing"]), "var(--c-writing)"),
+        ("听力套数", len(data["listening"]), "var(--c-listen)"),
+        ("模考次数", len(data["mock"]), "var(--c-mock)"),
+        ("学习活跃天数", len(_activity_counts(data)), "var(--c-streak)"),
+        ("最近模考总分", _fmt(latest) if latest is not None else "—", "var(--c-target)"),
+        ("待核验项", open_verif, "var(--c-warn)"),
     ]
-    items = []
-    for label, value in cards:
-        items.append(
-            '<div class="card"><div class="cval">%s</div>'
-            '<div class="clabel">%s</div></div>' % (_esc(value), _esc(label))
+    items = "".join(
+        '<div class="card" style="--accent:%s"><div class="cval">%s</div>'
+        '<div class="clabel">%s</div></div>' % (accent, _esc(v), _esc(lbl))
+        for lbl, v, accent in cards
+    )
+    return '<div class="cards">%s</div>' % items
+
+
+def _progress_ring(cur, target, size=148):
+    import math
+    r = size / 2.0 - 13
+    circ = 2 * math.pi * r
+    frac = 0.0 if not cur or not target else max(0.0, min(cur / target, 1.0))
+    cx = cy = size / 2.0
+    return (
+        '<svg viewBox="0 0 %d %d" class="ring" role="img">'
+        '<circle class="ring-bg" cx="%.1f" cy="%.1f" r="%.1f"/>'
+        '<circle class="ring-fg" cx="%.1f" cy="%.1f" r="%.1f" '
+        'stroke-dasharray="%.2f" stroke-dashoffset="%.2f" '
+        'transform="rotate(-90 %.1f %.1f)"/></svg>'
+        % (size, size, cx, cy, r, cx, cy, r, circ, circ * (1 - frac), cx, cy)
+    )
+
+
+def build_hero(data, exam_date):
+    if exam_date:
+        days = (exam_date - date.today()).days
+        sub = exam_date.strftime("%Y-%m-%d")
+        if days > 0:
+            big, unit = str(days), "天后考试"
+        elif days == 0:
+            big, unit = "今天", "就是考试日"
+        else:
+            big, unit = str(-days), "天前已考"
+    else:
+        big, unit = "—", "未设置考试日期"
+        sub = "用 --exam-date 或在 study-plan.md 写 exam_date"
+
+    target_avg = sum(TARGET_SCORES.values()) / len(TARGET_SCORES)
+    cur = _latest_overall(data["mock"])
+    ring = _progress_ring(cur, target_avg)
+    cur_txt = _fmt(cur) if cur is not None else "—"
+    return (
+        '<section class="hero">'
+        '<div class="hero-cd"><div class="cd-num">%s</div>'
+        '<div class="cd-unit">%s</div><div class="cd-sub">%s</div></div>'
+        '<div class="hero-ring">%s<div class="ring-cap">'
+        '<div class="ring-cur">%s</div><div class="ring-tgt">目标 %s</div>'
+        '</div></div></section>'
+        % (_esc(big), _esc(unit), _esc(sub), ring, cur_txt, _fmt(target_avg))
+    )
+
+
+def build_goal_gap(mock):
+    if not mock:
+        return _no_data()
+    rows = sorted(mock, key=_rec_date)
+    scores = _get(rows[-1], "scores") or {}
+    if not isinstance(scores, dict):
+        return _no_data()
+    names = {"L": "听力", "R": "阅读", "W": "写作", "S": "口语"}
+    out = ['<div class="goals">']
+    for k in ("L", "R", "W", "S"):
+        cur = _as_float(scores.get(k)) or 0.0
+        tgt = TARGET_SCORES[k]
+        frac = max(0.0, min(cur / tgt, 1.0)) if tgt else 0.0
+        met = cur >= tgt
+        cls = "met" if met else "gap"
+        tail = "已达标" if met else ("差 %s" % _fmt(tgt - cur))
+        out.append(
+            '<div class="goal"><div class="goal-top">'
+            '<span class="goal-name">%s</span>'
+            '<span class="goal-val %s">%s / %s · %s</span></div>'
+            '<div class="goal-track"><div class="goal-fill %s" '
+            'style="width:%.0f%%"></div></div></div>'
+            % (names[k], cls, _fmt(cur), _fmt(tgt), tail, cls, frac * 100)
         )
-    return '<div class="cards">%s</div>' % "".join(items)
+    out.append("</div>")
+    return "".join(out)
+
+
+def build_heatmap(data, weeks=18):
+    counts = _activity_counts(data)
+    today = date.today()
+    start = today - timedelta(days=weeks * 7 - 1)
+    start -= timedelta(days=start.weekday())  # align to Monday
+    cell, gap = 13, 3
+    cols = (today - start).days // 7 + 1
+    w = 24 + cols * (cell + gap)
+    h = 22 + 7 * (cell + gap)
+    maxc = max(counts.values()) if counts else 0
+
+    def level(n):
+        if n <= 0:
+            return 0
+        if maxc <= 1:
+            return 4
+        q = n / maxc
+        return 1 if q <= 0.25 else 2 if q <= 0.5 else 3 if q <= 0.75 else 4
+
+    parts = ['<svg viewBox="0 0 %d %d" class="heatmap" role="img">' % (w, h)]
+    wd = ["一", "三", "五"]
+    for idx, ri in enumerate((0, 2, 4)):
+        parts.append(
+            '<text x="0" y="%.1f" class="hm-wd">%s</text>'
+            % (32 + ri * (cell + gap), wd[idx])
+        )
+    months = set()
+    d = start
+    while d <= today:
+        ci = (d - start).days // 7
+        x = 22 + ci * (cell + gap)
+        y = 18 + d.weekday() * (cell + gap)
+        n = counts.get(d.isoformat(), 0)
+        parts.append(
+            '<rect class="hm-cell hm-l%d" x="%.1f" y="%.1f" width="%d" '
+            'height="%d" rx="3" data-tip="%s · %d 项"/>'
+            % (level(n), x, y, cell, cell, d.isoformat(), n)
+        )
+        if d.day <= 7 and d.month not in months:
+            months.add(d.month)
+            parts.append('<text x="%.1f" y="11" class="hm-mon">%d月</text>' % (x, d.month))
+        d += timedelta(days=1)
+    parts.append("</svg>")
+    parts.append(
+        '<div class="hm-legend"><span>少</span>'
+        + "".join('<i class="hm-l%d"></i>' % i for i in range(5))
+        + "<span>多</span></div>"
+    )
+    return "".join(parts)
+
+
+def build_activity_feed(data, limit=8):
+    items = []
+    for key, rec in _all_records(data):
+        d = _rec_date(rec)
+        if key == "writing":
+            band = _as_float(_get(rec, "ai_scores", "opus", "overall"))
+            desc = "写作 %s · %s 分" % (rec.get("task", ""), _fmt(band) if band is not None else "—")
+        elif key == "listening":
+            tot, cor = rec.get("total_questions"), rec.get("correct_count")
+            cc = "%s/%s" % (cor, tot) if tot else "—"
+            desc = "听力 %s %s · %s" % (rec.get("source_book", ""), rec.get("test_id", ""), cc)
+        elif key == "reading":
+            desc = "阅读 %s %s" % (rec.get("source_book", ""), rec.get("test_id", ""))
+        else:
+            band = _as_float(_get(rec, "scores", "overall"))
+            desc = "模考 %s %s · %s 分" % (rec.get("source_book", ""), rec.get("test_id", ""), _fmt(band) if band is not None else "—")
+        items.append((d, key, desc))
+    if not items:
+        return _no_data()
+    items.sort(key=lambda x: x[0], reverse=True)
+    rows = "".join(
+        '<li class="feed-item"><span class="feed-dot feed-%s"></span>'
+        '<span class="feed-date">%s</span><span class="feed-desc">%s</span></li>'
+        % (key, _esc(d), _esc(desc))
+        for d, key, desc in items[:limit]
+    )
+    return '<ul class="feed">%s</ul>' % rows
 
 
 # ---------------------------------------------------------------------------
@@ -638,60 +855,154 @@ def build_summary(data):
 # ---------------------------------------------------------------------------
 
 STYLE = """
-:root { --bg:#f1f5f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; }
+:root {
+  --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#64748b;
+  --border:#e6ebf2; --track:#eef2f7; --shadow:0 1px 3px rgba(15,23,42,.06);
+  --accent:#0ea5e9; --accent2:#1e3a8a;
+  --c-writing:#2563eb; --c-listen:#0891b2; --c-mock:#7c3aed;
+  --c-streak:#f59e0b; --c-target:#16a34a; --c-warn:#e11d48;
+  --good:#16a34a; --bad:#e11d48;
+  --hm0:#eaeef4; --hm1:#cfe8fb; --hm2:#88c9f2; --hm3:#33a1e0; --hm4:#0b6cb0;
+}
+[data-theme="dark"] {
+  --bg:#0b1220; --panel:#141d30; --ink:#e7eef9; --muted:#93a4c0;
+  --border:#243149; --track:#1b2740; --shadow:0 1px 3px rgba(0,0,0,.4);
+  --hm0:#1b2740; --hm1:#163a5a; --hm2:#1f6fa6; --hm3:#37a0dd; --hm4:#7fd0ff;
+}
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",Roboto,Helvetica,Arial,sans-serif;
-  line-height:1.45; }
-.wrap { max-width:1100px; margin:0 auto; padding:28px 20px 60px; }
-header h1 { font-size:26px; margin:0 0 4px; letter-spacing:-0.01em; }
-header .ts { color:var(--muted); font-size:13px; margin:0 0 24px; }
-.cards { display:flex; flex-wrap:wrap; gap:14px; margin-bottom:28px; }
-.card { flex:1 1 160px; background:var(--panel); border:1px solid #e2e8f0;
-  border-radius:12px; padding:16px 18px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
-.card .cval { font-size:30px; font-weight:700; color:#1e293b; }
-.card .clabel { color:var(--muted); font-size:13px; margin-top:2px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:20px; }
-.panel { background:var(--panel); border:1px solid #e2e8f0; border-radius:14px;
-  padding:18px 20px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
-.panel h2 { font-size:16px; margin:0 0 12px; color:#1e293b; }
-.chart { width:100%; height:auto; display:block; }
-.radar { max-width:340px; margin:0 auto; }
-.ytick,.xtick { fill:#64748b; font-size:11px; }
-.xtick { text-anchor:middle; }
-.ytick { text-anchor:end; }
-.raxis { fill:#334155; font-size:13px; font-weight:600; text-anchor:middle; }
-.blabel { fill:#334155; font-size:12px; text-anchor:end; }
-.bval { fill:#475569; font-size:12px; }
+  line-height:1.45; transition:background .25s,color .25s; }
+.wrap { max-width:1160px; margin:0 auto; padding:26px 20px 60px; }
+.topbar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; }
+.topbar h1 { font-size:24px; margin:0 0 4px; letter-spacing:-0.01em; }
+.topbar .ts { color:var(--muted); font-size:12.5px; margin:0; }
+.ttoggle { border:1px solid var(--border); background:var(--panel); color:var(--ink);
+  border-radius:999px; padding:7px 14px; font-size:13px; cursor:pointer;
+  box-shadow:var(--shadow); white-space:nowrap; transition:transform .1s; }
+.ttoggle:hover { transform:translateY(-1px); }
+/* hero */
+.hero { display:flex; align-items:center; justify-content:space-between; gap:24px;
+  background:linear-gradient(120deg,var(--accent2),var(--accent));
+  color:#fff; border-radius:18px; padding:26px 30px; margin-bottom:22px;
+  box-shadow:0 10px 30px rgba(14,165,233,.22); flex-wrap:wrap; }
+.hero-cd .cd-num { font-size:58px; font-weight:800; line-height:1; letter-spacing:-1px; }
+.hero-cd .cd-unit { font-size:17px; font-weight:600; margin-top:6px; opacity:.95; }
+.hero-cd .cd-sub { font-size:12.5px; margin-top:6px; opacity:.8; }
+.hero-ring { position:relative; width:148px; height:148px; flex:0 0 auto; }
+.ring { width:148px; height:148px; display:block; }
+.ring-bg { fill:none; stroke:rgba(255,255,255,.25); stroke-width:11; }
+.ring-fg { fill:none; stroke:#fff; stroke-width:11; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
+.ring-cap { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.ring-cur { font-size:30px; font-weight:800; }
+.ring-tgt { font-size:12px; opacity:.85; margin-top:2px; }
+/* kpi cards */
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:22px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--accent);
+  border-radius:13px; padding:15px 17px; box-shadow:var(--shadow); }
+.card .cval { font-size:29px; font-weight:750; }
+.card .clabel { color:var(--muted); font-size:12.5px; margin-top:2px; }
+/* grid + panels */
+.grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:16px;
+  padding:18px 20px; box-shadow:var(--shadow); min-width:0; }
+.panel.wide { grid-column:1 / -1; }
+.panel h2 { font-size:15px; margin:0 0 14px; }
+.chart { width:100%; height:auto; display:block; overflow:visible; }
+.radar { max-width:330px; margin:0 auto; }
+.ytick,.xtick,.bval { fill:var(--muted); font-size:11px; }
+.xtick { text-anchor:middle; } .ytick { text-anchor:end; }
+.raxis { fill:var(--ink); font-size:13px; font-weight:600; text-anchor:middle; }
+.blabel { fill:var(--ink); font-size:12px; text-anchor:end; }
+.bartrack { fill:var(--track); }
+.pt,.bar,.hm-cell { cursor:pointer; transition:opacity .12s; }
+.pt:hover { r:6.5; } .bar:hover { opacity:.82; } .hm-cell:hover { stroke:var(--ink); stroke-width:1.4; }
 .ylabel { color:var(--muted); font-size:12px; margin-bottom:4px; }
 .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; }
 .lg { font-size:12px; color:var(--muted); display:inline-flex; align-items:center; }
-.lg i { width:12px; height:12px; border-radius:3px; display:inline-block;
-  margin-right:6px; }
-.nodata { color:var(--muted); font-style:italic; font-size:14px;
-  padding:24px 0; text-align:center; }
+.lg i { width:12px; height:12px; border-radius:3px; display:inline-block; margin-right:6px; }
+.nodata { color:var(--muted); font-style:italic; font-size:14px; padding:24px 0; text-align:center; }
+/* goal bars */
+.goals { display:flex; flex-direction:column; gap:14px; }
+.goal-top { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+.goal-name { font-weight:600; }
+.goal-val.met { color:var(--good); } .goal-val.gap { color:var(--muted); }
+.goal-track { height:10px; background:var(--track); border-radius:99px; overflow:hidden; }
+.goal-fill { height:100%; border-radius:99px; transition:width .6s ease; }
+.goal-fill.met { background:var(--good); } .goal-fill.gap { background:var(--accent); }
+/* heatmap */
+.heatmap { width:100%; height:auto; display:block; overflow:visible; }
+.hm-wd { fill:var(--muted); font-size:10px; } .hm-mon { fill:var(--muted); font-size:10px; }
+.hm-l0{fill:var(--hm0);} .hm-l1{fill:var(--hm1);} .hm-l2{fill:var(--hm2);} .hm-l3{fill:var(--hm3);} .hm-l4{fill:var(--hm4);}
+.hm-legend { display:flex; align-items:center; gap:4px; justify-content:flex-end; margin-top:8px; font-size:11px; color:var(--muted); }
+.hm-legend i { width:12px; height:12px; border-radius:3px; display:inline-block; }
+/* activity feed */
+.feed { list-style:none; margin:0; padding:0; }
+.feed-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+.feed-item:last-child { border-bottom:none; }
+.feed-dot { width:9px; height:9px; border-radius:99px; flex:0 0 auto; }
+.feed-writing{background:var(--c-writing);} .feed-listening{background:var(--c-listen);}
+.feed-reading{background:var(--c-target);} .feed-mock{background:var(--c-mock);}
+.feed-date { color:var(--muted); font-variant-numeric:tabular-nums; flex:0 0 auto; }
+.feed-desc { color:var(--ink); }
+/* tooltip */
+#tip { position:fixed; z-index:50; background:var(--ink); color:var(--bg);
+  padding:6px 10px; border-radius:8px; font-size:12.5px; pointer-events:none;
+  opacity:0; transition:opacity .1s; box-shadow:0 6px 20px rgba(0,0,0,.25); white-space:nowrap; }
 footer { color:var(--muted); font-size:12px; margin-top:30px; text-align:center; }
+@media (max-width:720px){ .grid{grid-template-columns:1fr;} .hero{justify-content:center; text-align:center;} }
+"""
+
+SCRIPT = """
+(function(){
+  var root=document.documentElement;
+  var saved=localStorage.getItem('bw-theme');
+  if(!saved){ saved=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'; }
+  root.setAttribute('data-theme',saved);
+  var btn=document.getElementById('themeBtn');
+  function lbl(){ btn.textContent=(root.getAttribute('data-theme')==='dark')?'切换浅色':'切换深色'; }
+  if(btn){ lbl(); btn.onclick=function(){
+    var n=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    root.setAttribute('data-theme',n); localStorage.setItem('bw-theme',n); lbl();
+  }; }
+  var tip=document.getElementById('tip');
+  document.addEventListener('mouseover',function(e){
+    var t=e.target.closest('[data-tip]'); if(!t)return;
+    tip.textContent=t.getAttribute('data-tip'); tip.style.opacity='1';
+  });
+  document.addEventListener('mousemove',function(e){
+    if(tip.style.opacity!=='1')return;
+    var x=e.clientX+14,y=e.clientY+14;
+    if(x+tip.offsetWidth>innerWidth)x=e.clientX-tip.offsetWidth-14;
+    if(y+tip.offsetHeight>innerHeight)y=e.clientY-tip.offsetHeight-14;
+    tip.style.left=x+'px'; tip.style.top=y+'px';
+  });
+  document.addEventListener('mouseout',function(e){
+    if(e.target.closest('[data-tip]')) tip.style.opacity='0';
+  });
+})();
 """
 
 
-def render_html(data, root):
+def render_html(data, root, exam_date=None):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    summary = build_summary(data)
-    writing_trend = build_writing_trend(data["writing"])
-    radar = build_radar(data["mock"])
-    error_bars = build_error_bars(data["writing"], data["listening"])
-    listen_trend = build_listening_trend(data["listening"])
+    hero = build_hero(data, exam_date)
+    kpis = build_kpis(data)
 
+    # (title, body, wide?)
     panels = [
-        ("写作分数趋势", writing_trend),
-        ("四科雷达（最近模考 vs 目标）", radar),
-        ("高频错误标签", error_bars),
-        ("听力正确率趋势", listen_trend),
+        ("目标达成度（最近模考 vs 目标）", build_goal_gap(data["mock"]), False),
+        ("四科雷达", build_radar(data["mock"]), False),
+        ("学习热力图（近 18 周）", build_heatmap(data), True),
+        ("写作分数趋势", build_writing_trend(data["writing"]), False),
+        ("听力正确率趋势", build_listening_trend(data["listening"]), False),
+        ("高频错误标签", build_error_bars(data["writing"], data["listening"]), False),
+        ("最近动态", build_activity_feed(data), False),
     ]
     panel_html = "".join(
-        '<section class="panel"><h2>%s</h2>%s</section>' % (_esc(title), body)
-        for title, body in panels
+        '<section class="panel%s"><h2>%s</h2>%s</section>'
+        % (" wide" if wide else "", _esc(title), body)
+        for title, body, wide in panels
     )
 
     return """<!DOCTYPE html>
@@ -704,17 +1015,21 @@ def render_html(data, root):
 </head>
 <body>
 <div class="wrap">
-<header>
-<h1>Bandwise · 雅思备考进度面板</h1>
-<p class="ts">生成时间 %s · 数据目录：%s</p>
-</header>
+<div class="topbar">
+<div><h1>Bandwise · 雅思备考进度面板</h1>
+<p class="ts">生成时间 %s · 数据目录：%s</p></div>
+<button id="themeBtn" class="ttoggle" type="button">切换深色</button>
+</div>
+%s
 %s
 <div class="grid">%s</div>
 <footer>由 Bandwise 面板生成器生成 · 完全离线 · 零依赖</footer>
 </div>
+<div id="tip"></div>
+<script>%s</script>
 </body>
 </html>
-""" % (STYLE, _esc(ts), _esc(root), summary, panel_html)
+""" % (STYLE, _esc(ts), _esc(root), hero, kpis, panel_html, SCRIPT)
 
 
 # ---------------------------------------------------------------------------
@@ -745,9 +1060,14 @@ def main(argv=None):
         "--out",
         help="输出 HTML 路径（默认 <root>/dashboard.html）。",
     )
+    parser.add_argument(
+        "--exam-date",
+        help="考试日期 YYYY-MM-DD（用于倒计时）。未给则读 study-plan.md 的 exam_date。",
+    )
     args = parser.parse_args(argv)
 
     root = resolve_root(args.root)
+    exam_date = read_exam_date(root, args.exam_date)
     out = args.out
     if out:
         out = os.path.abspath(os.path.expanduser(out))
@@ -755,7 +1075,7 @@ def main(argv=None):
         out = os.path.join(root, "dashboard.html")
 
     data = load_data(root)
-    page = render_html(data, root)
+    page = render_html(data, root, exam_date)
 
     out_dir = os.path.dirname(out) or "."
     try:
@@ -768,8 +1088,9 @@ def main(argv=None):
 
     total = sum(len(v) for v in data.values())
     print(
-        "已生成 %s（写作=%d，听力=%d，模考=%d；共 %d 个文件）"
-        % (out, len(data["writing"]), len(data["listening"]), len(data["mock"]), total)
+        "已生成 %s（写作=%d，听力=%d，阅读=%d，模考=%d；共 %d 个文件）"
+        % (out, len(data["writing"]), len(data["listening"]),
+           len(data["reading"]), len(data["mock"]), total)
     )
     return 0
 
