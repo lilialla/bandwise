@@ -1,6 +1,6 @@
 # Contributing to Bandwise
 
-Thanks for helping improve **Bandwise** — IELTS Coach for Claude Code. This guide
+Thanks for helping improve **Bandwise** — IELTS Coach for Codex / Claude Code. This guide
 covers how the repo is organized, how to add or change a skill, and the rules that
 keep the project safe and consistent.
 
@@ -8,15 +8,16 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Repository layout
 
-Bandwise is a cluster of 10 Claude Code skills. Each skill is a directory at the
-repo root containing a single `SKILL.md` prompt file:
+Bandwise is a cluster of 10 skills. Each directory contains `SKILL.md` and may
+include focused references. Install the cluster together: all modules read the
+shared practice contract and scoring references under `ielts/references/`.
 
 | Directory | Role |
 | --- | --- |
 | `ielts` | Router / intake entry point |
 | `ielts-writing` | Task 1/2 essay grading (TR/CC/LR/GRA) + archive |
 | `ielts-reading` | Reading error diagnosis + synonym extraction |
-| `ielts-speaking` | Part 1/2/3 material factory |
+| `ielts-speaking` | Part 1/2/3 interactive speaking practice |
 | `ielts-listening` | Intensive-listening + error taxonomy + archive |
 | `ielts-mock` | Mock / real exam score intake |
 | `ielts-status` | Cross-artifact progress report + error-book view |
@@ -29,15 +30,17 @@ Supporting code lives under `scripts/` (validation and dashboard generation).
 ## Persistent data root
 
 User progress is **not** stored in the repo. It lives under a configurable root,
-set via the `IELTS_COACH_HOME` environment variable (default `~/ielts-coach/`),
+resolved from `IELTS_COACH_HOME`, then the optional private
+`~/.config/bandwise/config.json` data_root, then `~/ielts-coach/`,
 with English subdirectories and ledger files:
 
 - Subdirs: `writing/ listening/ reading/ speaking/ mock/ vocab/ reviews/`
 - Ledgers: `study-plan.md`, `ai-worklog.md`, `open-questions.md`,
   `decisions.md`, `question-bank.md`
 
-Never hard-code an absolute path; always resolve it from `IELTS_COACH_HOME` with
-the documented default.
+Never hard-code a personal absolute path. Follow the shared resolution rules;
+use an existing plan_path when configured rather than making a parallel plan.
+Personal configuration, credentials and learner data must remain outside this repo.
 
 ## Adding or changing a skill
 
@@ -65,13 +68,15 @@ metadata:
 
 ## Testing locally
 
-Skills install by copying each `<skill>/` directory into `~/.claude/skills/`:
+Install all 10 sibling directories together into the chosen runtime skills folder.
+Check existing destinations before updating; do not overwrite local changes.
+A single-module copy is no longer a standalone installation. For local checks:
 
 ```bash
-cp -r ielts-writing ~/.claude/skills/
+python3 scripts/validate_skills.py
 ```
 
-Restart Claude Code (or start a new session) so it picks up the skill, then invoke
+Start a new Codex / Claude Code session so it picks up the skill, then invoke
 it (e.g. `/ielts-writing`) and confirm the behavior.
 
 ## Validation gate

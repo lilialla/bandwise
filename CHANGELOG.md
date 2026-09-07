@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Complete the existing ten-skill learning loop: learner attempt, evidence-based
+  feedback, revision/retry and the next practice action; preserve current routines.
+- Add shared official scoring references; remove unsupported band shortcuts,
+  fixed AI score deductions, canned story coverage and fabricated exam dates.
+- Add optional private config and reuse an existing Maimemo MCP or API connector;
+  document read-only status, preview and separately authorized account writes.
+- Add IELTS Wang corpus result-page/export/self-report intake with version,
+  speed and attempt tracking. No public progress API integration is claimed.
+- Distinguish original/revised writing, first/repeated practice and score sources;
+  retain old field names where useful and clarify legacy dashboard limitations.
+- Support Codex alongside Claude Code; install sibling skills together so shared
+  references remain reachable. No personal data or credentials are included.
+
 ## [1.1.4] - 2026-05-29
 
 ### Changed
