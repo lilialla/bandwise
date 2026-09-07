@@ -15,7 +15,9 @@ assignees: ''
 
 <!-- What should the skill(s) do instead? Be concrete about the behavior
      and, if relevant, what gets written to the data root
-     (writing/ listening/ reading/ speaking/ mock/ vocab/ reviews/ or a ledger). -->
+     (writing/ listening/ reading/ speaking/records/ mock/ vocab/ reviews/ or a ledger).
+     For voice or connector ideas, identify which step is currently manual and
+     whether any new account access, external writes or paid service is needed. -->
 
 ## Which skill(s) does this affect?
 
@@ -29,4 +31,5 @@ assignees: ''
 
 ## Additional context
 
-<!-- Optional: examples, screenshots, links. -->
+<!-- Optional: public links or synthetic examples. Do not attach personal
+     learning records, credentials or materials you are not permitted to share. -->

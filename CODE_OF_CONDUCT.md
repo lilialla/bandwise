@@ -46,9 +46,10 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the project maintainers via a private GitHub message to
-[@lilialla](https://github.com/lilialla) or by opening a confidential security
-advisory. All complaints will be reviewed and investigated promptly and fairly.
+reported to the project maintainer at `1733970552@qq.com`. For a security
+vulnerability, use the private reporting channels in [SECURITY.md](SECURITY.md).
+Do not post other people's private information in a public issue. All complaints
+will be reviewed and investigated promptly and fairly.
 
 ## Attribution
 

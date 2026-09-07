@@ -20,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Align README, contributor/security guidance and issue/PR templates with the
+  current source: complete first-install instructions, copy-versus-symlink
+  updates, optional dependencies, voice-record CLI paths, data layout and checks.
+- Clarify that module versions differ from release tags, archived scores remain
+  external AI feedback, and dated speaking-bank previews are not complete banks.
+- Replace the issue chooser's unavailable Discussions link with usage and
+  private-reporting documentation, and remove references to GitHub private messaging.
 - Complete the existing ten-skill learning loop: learner attempt, evidence-based
   feedback, revision/retry and the next practice action; preserve current routines.
 - Add shared official scoring references; remove unsupported band shortcuts,

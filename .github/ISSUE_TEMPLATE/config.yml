@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Questions & Discussions
-    url: https://github.com/lilialla/bandwise/discussions
-    about: Ask usage questions, share prep workflows, or propose ideas before opening an issue.
+  - name: Usage and setup
+    url: https://github.com/lilialla/bandwise/blob/main/README.md
+    about: Read installation, GPT Voice handoff, record storage and troubleshooting guidance.
+  - name: Private security reports
+    url: https://github.com/lilialla/bandwise/blob/main/SECURITY.md
+    about: Follow the private reporting instructions; do not post credentials or learner data in public issues.
