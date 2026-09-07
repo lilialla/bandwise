@@ -23,3 +23,6 @@ jobs:
 
       - name: Byte-compile scripts
         run: python3 -m py_compile scripts/*.py
+
+      - name: Test speaking record workflow
+        run: python3 -B -m unittest discover -s tests -v

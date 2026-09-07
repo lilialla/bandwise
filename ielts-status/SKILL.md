@@ -28,6 +28,8 @@ metadata:
 
 同一结果页、重复导入、同场不同快照只算一次；独立复做算新的作答但进入复练组。不同材料难度、时间条件、阅卷模型间差异要说明，不能把混合均值解释为能力提升。
 
+GPT语音新记录用 [口语记录脚本](../ielts-speaking/scripts/speaking_record.py) 的 `--root DATA_ROOT status` 只读汇总（实际由助手用路径参数数组调用）。读取 `sessions` 内的四维、overall_estimate、来源及next_practice；`invalid_files`另报，不当0分。外部GPT声称听过与本地核听分开。旧Markdown和新JSON可能记录同一场，按已有session_id或明确来源对照；未确认相同就不合并，也不直接相加宣称总场次。
+
 考试日期只读取确切日期，剩余天数为考试日减今天；只有月份时报告月份，不私设月底日期。目标分只读用户确认值。
 
 ## 输出

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- ChatGPT Voice handoff template, per-session export contract and an offline
+  record importer with preview, private save, duplicate detection and session summaries.
+- Four-criterion external AI feedback preserves the source response; unsupported
+  pronunciation/fluency bands and partial-session overall scores remain empty.
+- Dated public speaking-bank source index for September–December 2026,
+  distinguishing previews, forecasts, download leads and empty collections.
+- Synthetic regression tests for score evidence, missing answers, duplicate/conflict
+  imports, revisions, private paths, input boundaries and the CLI workflow.
+
 ### Changed
 
 - Complete the existing ten-skill learning loop: learner attempt, evidence-based

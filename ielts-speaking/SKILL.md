@@ -1,9 +1,9 @@
 ---
 name: ielts-speaking
 description: |
-  雅思口语Part 1/2/3陪练、录音反馈和题库素材维护。用户先回答再反馈，按实际音频能力评价，不把转写或背稿当口语成绩。
+  雅思口语Part 1/2/3陪练、GPT语音练习包与练后记录导入。保存原回答、四维AI反馈和复练任务，区分音频与转写依据。
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   project: bandwise
   license: PolyForm-Noncommercial-1.0.0
 ---
@@ -11,6 +11,12 @@ metadata:
 # Bandwise · 口语陪练
 
 先读 [共用约定](../ielts/references/practice-contract.md) 和 [评分依据](../ielts/references/scoring.md)。题库版本管理读 [题库模块](../ielts-question-bank/SKILL.md)。
+
+## GPT语音交接
+
+用户要“拿去和GPT语音练”“准备练习包”“保存GPT口语评分”或“接着上次练”时，读取并执行 [语音交接流程](references/voice-workflow.md)。准备时使用现有题库来源，生成完整可复制的题目与指令；导入时使用本Skill的本地保存脚本，检查记录ID、四维评分依据和复练关系。
+
+用户只问题库在哪，先读 [2026年9月来源索引](../ielts-question-bank/references/speaking-sources-2026-09.md)，按当前时间核验后答复。查询题库不自动开始练习，不自动改变等待更新的安排。
 
 ## 启动条件与能力
 
@@ -36,3 +42,5 @@ Part 1同样需要练习；发音关注可懂度和实际语音特征，不把�
 ## 记录
 
 按授权保存到 `IELTS_COACH_HOME` 解析后的 `speaking/`，`type: speaking-practice`。记录话题和来源版本、Part、原回答/音频位置、`input_mode`、`audio_observed`、`attempt_kind`、`timed`、改进点与重答；完整分数所需证据缺失则overall为null。来源字段沿用共用约定；AI生成素材不计为用户已练过。
+
+GPT语音回传统一使用 `speaking/records/*.json`，原报文与有效分数共存，四维为FC/LR/GRA/PR；按session_id统计场次。旧Markdown原件保持原状，不自动迁移。模型给的分数是外部AI反馈，导入脚本不会听音频或重新评分。
